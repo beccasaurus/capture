@@ -1,0 +1,14 @@
+= capture
+
+A simple gem for easily capturing writes to STDOUT, files, or any IO object.
+
+I needed to write this for testing calls to #puts in an app and it took me 
+awhile to get the code working properly (especially without having to 
+write to the filesystem to get the output properly).
+
+I figured that I might need this again or someone else might find this 
+handy so ... here it is!
+
+== Install & Usage
+
+not yet!  nearly done ... check back soon
