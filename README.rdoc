@@ -1,6 +1,6 @@
 = capture
 
-A simple gem for easily capturing writes to STDOUT, files, or any IO object.
+A simple gem for easily capturing writes to STDOUT & STDERR
 
 I needed to write this for testing calls to #puts in an app and it took me 
 awhile to get the code working properly (especially without having to 
@@ -9,6 +9,25 @@ write to the filesystem to get the output properly).
 I figured that I might need this again or someone else might find this 
 handy so ... here it is!
 
-== Install & Usage
+== Notes
 
-not yet!  nearly done ... check back soon
+If I get bored, I'd like to update this to be able to capture 
+writes to *any* IO object.  That could be super useful!
+
+== Install
+
+  $ gem sources -a http://gems.github.com
+  $ sudo gem install remi-capture
+
+== Usage
+
+  >> Capture { puts 'hello' }
+  => 'hello'
+
+  >> Capture(:stdout){ puts 'hello stdout' }
+  => 'hello stdout'
+
+  >> Capture(:stderr){ warn 'hello stderr' }
+  => 'hello stderr'
+
+That's it!  Like I said, super simple.

@@ -1,66 +1,88 @@
-require 'stringio'
-
-# NOTE: we use #eval pretty often.  I don't currently know 
-#       another way to work with global variables.  I don't 
-#       this there's a set_global_variable  :/
-
-# ...Capture class ...
 class Capture
 
-  # ... do method ...
-  #
-  # ==== Parameters
-  # io::
-  #   If this is an IO object, we use it directly.
-  #
-  #   Else if this <~to_s> has the name of a global variable 
-  #   (with or without a dollar sign), and that global
-  #   variable referances an IO object, we use that object.
-  #
-  #   Else if this is nil, we use STDOUT.
-  #
-  #   Else ... nothing.  Fail!
-  #
-  # block::
-  #   The block to evaluate, in which we capture 
-  #   writes to io.
-  #
+  class << self
+    attr_accessor :currently_capturing
+  end
+
+  Capture.currently_capturing ||= {}
+
+  def self.[] name
+    Capture.currently_capturing[name]
+  end
+
+  def self.[]= name, value
+    Capture.currently_capturing[name] = value
+  end
+
   def self.do io = nil, &block
-    if io.is_a? IO
+    io = :stdout if io.nil?
 
-    elsif global = is_a_global_variable_and_IO?(io)
-      original = eval(global).clone
-      eval("#{global} = StringIO.open '', 'w'")
+    if global = is_a_global_variable_and_IO?(io)
+      start io
       block.call
-      output = eval(global).string
-      eval("#{global} = original")
-      return output
-
-    elsif io.nil?
-
+      stop io
     else
       raise "Not sure how to capture writes to io: #{ io.inspect }"
     end
   end
 
-  # ... is a global variable ...
   def self.is_a_global_variable_and_IO? io
     io = '$' + io.to_s.sub(/^\$/,'')
-    if global_variables.include?(io) and eval(io).is_a?(IO)
+    if global_variables.include?(io) and eval(io).respond_to?(:write)
       io
     else
       nil
     end
   end
 
-  # ... something like this
-  def self.start
+  def self.start io = nil
+    io = :stdout if io.nil?
+    if global = is_a_global_variable_and_IO?(io)
 
+      # backup original value of global
+      Capture[global] = eval(global).clone
+
+      # reset global to a StringIO for capturing
+      eval("#{global} = StringIO.open '', 'w'")
+      
+      # simple return nil
+      nil
+
+    end
+  end
+
+  def self.stop io = nil
+    io = :stdout if io.nil?
+    if global = is_a_global_variable_and_IO?(io)
+
+      # get captured output
+      output = eval(global).string
+
+      # reset global to backed up original
+      eval("#{global} = Capture[#{ global.inspect }]")
+
+      # we're no longer capturing ... delete from hash
+      currently_capturing.delete global
+
+      # reutrn the output
+      return output
+
+    end
   end
 
 end
 
-# ... public API method for capture ...
-def Capture io, &block
+# Captures STDOUT or STDERR and returns the output.
+#
+#  >> Capture { puts 'hello' }
+#  => 'hello'
+#
+#  >> Capture(:stdout){ puts 'hello stdout' }
+#  => 'hello stdout'
+#
+#  >> Capture(:stderr){ warn 'hello stderr' }
+#  => 'hello stderr'
+#
+def Capture io = nil, &block
   Capture.do io, &block
 end

@@ -2,22 +2,55 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe Capture do
 
-  before do
-    @stdout_block_to_capture = lambda {
-      puts 'i should get captured'
-      puts 'me too'
-    }
-    @expected_output  = "i should get captured\nme too\n"
+  it 'should capture STDOUT by default' do
+    Capture {
+      puts 'puts!'
+      warn 'warn!'
+    }.should == "puts!\n"
   end
-
-  it 'should capture STDOUT by default'
 
   it 'should be able to capture STDOUT' do
-    Capture(:stdout, &@stdout_block_to_capture).should == @expected_output
+    Capture(:stdout){
+      puts 'puts!'
+      warn 'warn!'
+    }.should == "puts!\n"
   end
 
-  it 'should be able to capture STDERR'
+  it 'should be able to capture STDERR' do
+    Capture(:stderr){
+      puts 'puts!'
+      warn 'warn!'
+    }.should == "warn!\n"
+  end
+
+  it 'should be able to start/stop capturing, manually, without using a block' do
+    Capture.start
+    puts 'puts!'
+    warn 'warn!'
+    Capture.stop.should == "puts!\n"
+
+    Capture.start :stdout
+    puts 'puts!'
+    warn 'warn!'
+    Capture.stop.should == "puts!\n"
+
+    Capture.start :stderr
+    puts 'puts!'
+    warn 'warn!'
+    Capture.stop(:stderr).should == "warn!\n"
+
+    #Capture.start :stderr
+    #puts 'puts!'
+    #warn 'warn!'
+    #Capture.stop.should == "warn!\n" # stop defaults to stderr because that's currently capturing
+  end
+
+#
+# Ideas ... eventually?
+#
+=begin
   it 'should be able to capture writes to a File'
+
   it 'should be able to capture arbitrary IO object'
 
   it 'should be able to capture *and* execute writes, normally'
@@ -25,7 +58,6 @@ describe Capture do
 
   it 'should raise an Exception if unknown io object is passed'
   it 'should raise an Exception if unknown io object is passed (including valid global)'
-
-  it 'should be able to start/stop capturing, manually, without using a block'
+=end
 
 end
