@@ -9,11 +9,6 @@ write to the filesystem to get the output properly).
 I figured that I might need this again or someone else might find this 
 handy so ... here it is!
 
-== Notes
-
-If I get bored, I'd like to update this to be able to capture 
-writes to *any* IO object.  That could be super useful!
-
 == Install
 
   $ gem sources -a http://gems.github.com
@@ -31,3 +26,8 @@ writes to *any* IO object.  That could be super useful!
   => 'hello stderr'
 
 That's it!  Like I said, super simple.
+
+== Notes
+
+If I get bored, I'd like to update this to be able to capture 
+writes to *any* IO object.  That could be super useful!
